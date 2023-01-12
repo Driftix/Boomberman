@@ -1,0 +1,27 @@
+@startuml class
+    skinparam actorStyle awesome
+    actor Sensor
+    actor Citizen
+    actor Responsible
+
+Sensor -> SensorController : SendData()
+
+Citizen -> ConnexionController ++ : postConnexion(matrice, password)
+return token
+
+Citizen -> NotificationController ++: postNotification()
+return notificationID
+
+Responsible -> ConnexionController ++ : postConnexion(matrice, password)
+return token
+
+Responsible -> RuleController ++ : postRule()
+return ruleID
+
+Responsible -> RiskController ++ : postRisk(SensorType)
+return riskID
+
+
+
+
+@enduml
