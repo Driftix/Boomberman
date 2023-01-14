@@ -1,0 +1,29 @@
+@startuml design
+    skinparam actorStyle awesome
+    package Client {
+        class Controller{
+            *socket : Websocket
+            +eventListerner("keydown")
+        }
+        class Socket{
+            +ononpen()
+            +onmessage(event)
+            +onclose(event)
+        }
+        class Movement{
+            
+        }
+
+
+
+    }
+    
+
+   package Serveur{
+       class Game{
+           
+       }
+   }
+
+
+@enduml

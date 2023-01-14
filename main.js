@@ -144,7 +144,6 @@ window.addEventListener("DOMContentLoaded",()=>{
 });
 
 
-
 document.addEventListener("keypress", function(event) {
     moveClient(event.key);
     console.log(event.key);
