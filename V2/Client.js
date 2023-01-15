@@ -6,8 +6,9 @@ var socket = new WebSocket("ws://localhost:8001/");
 
 //Récupération du joueur
 let player;
-let playerID;
 let terrain;
+//C'est les autres joueurs en gros
+let guest = [];
 
 // Lorsque la connexion est établie
 socket.onopen = function() {
@@ -25,12 +26,11 @@ socket.onmessage = function({data}) {
   switch(data.event){
     case "initPlayer":
       //Création du Terrain:
-      terrain = new Terrain(50,50);
+      //terrain = new Terrain(50,50);
       document.body.appendChild(terrain.getTable());
       //Créer le joueur sur le plateau createPlayer(identifier)
-      createPlayer(data.identifier);
+      createPlayer(data.identifier,true,0,0);
       //Et on rattache le client à son ID
-      playerID = data.identifier;
       let event = {
         "event" : "iKnowMyName"
       }
@@ -38,12 +38,23 @@ socket.onmessage = function({data}) {
       socket.send(JSON.stringify(event));
       break;
     case "newPlayer":
-      createPlayer(data.identifier)
-      console.log(data.identifier)
+      createPlayer(data.identifier,false,0,0)
       break;
     case "move" :
       console.log("move")
-      move(data.key, data.identifier);
+      guest.forEach((g)=>{
+        if(g.identifier == data.identifier){
+          g.newPosition(data.x, data.y);
+          terrain.movePlayer(g);
+        }
+      })
+      //move(data.key, data.identifier);
+      break;
+    case "initTerrain":
+      let body = document.getElementsByTagName("body")[0];
+      body.innerHTML += data.terrain
+      //document.body.appendChild(test);
+      terrain = new Terrain();
       break;
   }
  
@@ -72,70 +83,65 @@ document.addEventListener("keydown", function(event) {
     }
     socket.send(JSON.stringify(move))
   }
- /*
-  if(move(event.key, playerID)){
-    let move = {
-      "event" : "move",
-      "key": event.key,
-      "identifier" : playerID,
-    }
-    socket.send(JSON.stringify(move));
-  }
 
-  */
 });
 
-function createPlayer(identifier){
+function createPlayer(identifier,playable,x,y){
   //On va mettre le joueur dans une cellule
   //Voir pour modifier plus tard les coordonnées
-  player = new Player(0,0, identifier);
-  terrain.addPlayer(player);
-  /*
-  var elemDiv = document.createElement('a');
-  elemDiv.style.cssText = 'background-color:black; width:50px';
-  elemDiv.id = identifier;
-  elemDiv.textContent = identifier;
-  document.body.appendChild(elemDiv);
-  player = document.getElementById(identifier);
-  player.style.position = "absolute";*/
-}
-
-
-
-function move(key, identifier){
-  let p = document.getElementById(identifier);
-  switch(key){
-      case 'z':
-          p.style.top = p.getBoundingClientRect().top - 5 + 'px';
-          return true;
-      case 's':
-          p.style.top = p.getBoundingClientRect().top + 5 + 'px';
-          return true;
-      case 'd':
-          p.style.left = p.getBoundingClientRect().left + 5 + 'px';
-          return true;
-      case 'q':
-          p.style.left = p.getBoundingClientRect().left - 5 + 'px';
-          return true;
+  if(playable){
+    player = new Player(x,y, identifier);
+    terrain.addPlayer(player);
+  }else{
+    let guestPlayer = new Player(x,y,identifier);
+    terrain.addPlayer(guestPlayer);
+    guest.push(guestPlayer)
   }
 }
 
+
 function updatePosition(key,player){
-  
   let position = player.getPosition();
   switch(key){
     case 'z':
-      //Pour pouvoir remonter
-      player.newPosition(position[0] -1, position[1]);
-      return true;
+      return move(position[0]-1, position[1]);
     case 's':
-      player.newPosition(position[0] +1, position[1]);
-      return true;
+      return move(position[0]+1, position[1]);
     case 'd':
-      player.newPosition(position[0], position[1]+1);
-      return true;
+      return move(position[0] , position[1]+1);
     case 'q':
-      player.newPosition(position[0], position[1])-1;
+      return move(position[0],position[1]-1);
+    default:
+      action(key,player);
+    /*
+      player.newPosition(position[0], position[1]-1);
       return true;
+    */
+  }
+}
+
+function move(x,y){
+    
+  if(terrain.getTable().rows[x].cells[y].className != "wall" && terrain.getTable().rows[x].cells[y].className != "brick" ){
+    //console.log(x + ":" + y);
+    player.newPosition(x, y);
+    return true;
+  }else{
+   return false; 
+  }
+}
+
+
+function action(key,player){
+  switch(key){
+    case 'f':
+      //createPlayer(2,false,x,y);
+      setTimeout(function() {
+        console.log("box  explode");
+      }, 3000);
+      if(player.getBomb().getQuantity() > 0){
+        player.placeBomb(terrain);
+      }
+      break;
   }
 }

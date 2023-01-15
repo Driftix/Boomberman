@@ -1,33 +1,46 @@
 class Terrain{
-    constructor(width, height){
-        this.table = document.createElement("table");
-        this.table.setAttribute("id", "table");
-        this.table.setAttribute("border", "1");
-        this.table.setAttribute("cellpadding", "5");
-        this.table.setAttribute("cellspacing", "0");
-
-        this.tbody = document.createElement("tbody");
-        this.table.appendChild(this.tbody);
-
-        for (let i = 0; i < width; i++) {
-            let tr = document.createElement("tr");
-            for (let j = 0; j < height; j++) {
-                let td = document.createElement("td");
-                td.setAttribute("id", i + "," + j);
-                tr.appendChild(td);
-            }
-            this.tbody.appendChild(tr);
-        }
+    constructor(){
+        this.table = document.getElementById("table");
     }
     addPlayer(player){
         console.log(player.position)
-        table.rows[player.position[0]].cells[player.position[1]].appendChild(player.playerElement);
+        this.table.rows[player.position[0]].cells[player.position[1]].appendChild(player.playerElement);
     }
     movePlayer(player){
-        table.rows[player.position[0]].cells[player.position[1]].appendChild(player.playerElement);
+        this.table.rows[player.position[0]].cells[player.position[1]].appendChild(player.playerElement);
     }
     getTable(){
         return this.table;
     }
+    explode(x,y,r){
+        console.log(x + ":"+y);
+        console.log(this.table.rows[x].cells[y].className);
+        //à modifier totalement
+        for(let xmax = x; xmax < x + r; xmax++){
+            if(this.table.rows[xmax].cells[y].className == "brick" && this.table.rows[xmax].cells[y].className == "air"){
+                this.table.rows[xmax].cells[y].className = "air";
+                break;
+            }
+        }
+        for(let xmin = x; xmin < x - r; xmin--){
+            if(this.table.rows[xmin].cells[y].className == "brick" && this.table.rows[xmin].cells[y].className == "air"){
+                this.table.rows[xmin].cells[y].className = "air";
+                break;
+            }
+        }
+        for(let ymax = y; ymax < y + r; ymax++ ){
+            if(this.table.rows[x].cells[ymax].className == "brick" && this.table.rows[x].cells[ymax].className == "air"){
+                this.table.rows[x].cells[ymax].className = "air";
+                break;
+            }
+        }
+        for(let ymin = y; ymin < y- r; ymin++ ){
+            if(this.table.rows[x].cells[ymin].className == "brick" && this.table.rows[x].cells[ymin].className == "air"){
+                this.table.rows[x].cells[ymin].className = "air";
+                break;
+            }
+        }
+    }
+   
 }
 export {Terrain};
