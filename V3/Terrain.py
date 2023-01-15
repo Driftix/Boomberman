@@ -86,9 +86,9 @@ class Terrain :
             "x" : bomb["x"],
             "y" : bomb["y"],
             "radius" : bomb["radius"],
+            "terrain" : self.terrain2D,
             "destroyed" : destroyed
         })
-    
     def explodeTerrain(self,bomb):
         x = bomb["x"]
         y = bomb["y"]
@@ -117,6 +117,11 @@ class Terrain :
                 self.terrain2D[x][ty] = "air"
                 destroyed.append((x, ty))
         return destroyed
+    def getUpdateTerrainData(self):
+        return json.dumps({
+            "event" : "updateTerrain",
+            "terrain" : self.terrain2D
+        })
 
 
 

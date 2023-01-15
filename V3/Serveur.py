@@ -22,9 +22,12 @@ async def handle_connection(websocket, path):
             eventController.addEventData(event)
             #On check l'event et on traite
             if eventController.getClient_event() == "connect":
-                #On envoie en premier le terrain au client
+                #On envoie en premier le terrain non modifié au client
                 terrainData = terrain.getDataTerrain()
                 await websocket.send(terrainData)
+                #On met à jour la carte
+                terrainDataUpdate = terrain.getUpdateTerrainData()
+                await websocket.send(terrainDataUpdate)
                 #Ensuite crée son player
                 player = Player(str(websocket.id))
                 #On ajoute la connexion avec clé valeur => websock player
@@ -75,7 +78,7 @@ async def handle_connection(websocket, path):
                 for client in connected_clients:
                     await client.send(bombTerrainData)
                 #Après avoir placé la bombe il faut lancer un timer en tâche de fond
-                asyncio.create_task(countdown(1,bombTerrainData))
+                asyncio.create_task(countdown(2,bombTerrainData))
 
 
     except websockets.exceptions.ConnectionClosed:
@@ -88,12 +91,10 @@ async def countdown(n,bomb):
         n -= 1
         await asyncio.sleep(1)
     for client in connected_clients:
-        
         #on récupère la bombe et on renvoie l'event avec "explode"
         bombData = terrain.explodeData(bomb)
-        print(bombData)
+        #print(bombData)
         await client.send(bombData)
-
 
 start_server = websockets.serve(handle_connection, "localhost", 8001)
 asyncio.get_event_loop().run_until_complete(start_server)

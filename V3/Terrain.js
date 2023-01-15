@@ -29,31 +29,35 @@ class Terrain{
     }
     placeBomb(x,y){
         let bomb = new Bomb(x,y)
-        this.table.rows[x].cells[y].appendChild(bomb.bombElement);
+        this.table.rows[x].cells[y].className = "bomb";
     }
 
-    async animate(destroyed_blocs){
-        destroyed_blocs.forEach((bloc) =>{
-           
-                //On verifie que la case soit accessible, sinon l'erreur coupe le script
-                if(this.table.rows[bloc[0]].cells[bloc[1]] != undefined && this.table.rows[bloc[0]].cells != undefined){
-                    this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "red";
-                }
-                console.log("animation timeout")
-    
-        })
-    }
-    update(destroyed_blocs){
-        setInterval(() => {
-        destroyed_blocs.forEach((bloc) =>{
-            //On verifie que la case soit accessible, sinon l'erreur coupe le script
+    async animate(destroyed_bloc){
+        destroyed_bloc.forEach((bloc) => {
             if(this.table.rows[bloc[0]].cells[bloc[1]] != undefined && this.table.rows[bloc[0]].cells != undefined){
-                this.table.rows[bloc[0]].cells[bloc[1]].className = "air";
-                this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "";
-
+                //this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "red";
+                this.table.rows[bloc[0]].cells[bloc[1]].className = "anim";
             }
         })
-        }, 200);
+    }
+    update(terrain){
+             /*la config de terrain est la suivante => 
+            terrain[0] => ligne du tableau
+            terrain[0][0] => colonne
+            => retourne un nom de classe
+            */
+            setTimeout(() => {
+            const size = [terrain.length, terrain[0].length]
+            for(let i = 0; i < size[1]; i++){
+                for(let j=0; j < size[0]; j++){
+                   
+                    let cell = this.table.rows[i].cells[j];
+                    if(cell.className != terrain[i][j]){
+                        this.table.rows[i].cells[j].className = "air";
+                    }
+                }
+            }
+        }, 500);
     }
 }
 export {Terrain};

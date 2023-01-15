@@ -21,17 +21,21 @@ socket.onmessage = function({data}) {
   console.log("Reçu : " +data.event);
   switch(data.event){
     case "explode":
-      terrain.animate(data.destroyed).then(()=>terrain.update(data.destroyed));
-      console.log(data.destroyed)
+      //on récupère la partie de la carte détruite pour faire une anim à l'endroit de l'explosion
+      //puis on met à jour le visuel de la carte côté client !
+      terrain.animate(data.destroyed).then(()=>terrain.update(data.terrain));
+      break;
+    case "updateTerrain":
+      terrain.update(data.terrain);
       break;
     case "bombPlaced":
-      terrain.placeBomb(data.x, data.y)
+      terrain.placeBomb(data.x, data.y);
       break;
     case "initPlayer":
       terrain.addPlayer(data.identifier, data.x, data.y, data.playable);
       break;
     case "confirmMove" :
-      terrain.movePlayer(data.identifier, data.x, data.y)
+      terrain.movePlayer(data.identifier, data.x, data.y);
       break;
     case "initTerrain":
       console.log("InitTerrain...")
