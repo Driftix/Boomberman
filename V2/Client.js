@@ -121,7 +121,13 @@ function updatePosition(key,player){
 }
 
 function move(x,y){
-    
+    //pour test
+    createPlayer(2,false,x,y);
+    setTimeout(function() {
+      console.log("explode")
+    }, 10000);
+
+
   if(terrain.getTable().rows[x].cells[y].className != "wall" && terrain.getTable().rows[x].cells[y].className != "brick" ){
     //console.log(x + ":" + y);
     player.newPosition(x, y);
@@ -135,10 +141,6 @@ function move(x,y){
 function action(key,player){
   switch(key){
     case 'f':
-      //createPlayer(2,false,x,y);
-      setTimeout(function() {
-        console.log("box  explode");
-      }, 3000);
       if(player.getBomb().getQuantity() > 0){
         player.placeBomb(terrain);
       }

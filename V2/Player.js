@@ -17,20 +17,5 @@ class Player{
         element.style.padding = "0px";
         return element;
     }
-    newPosition(x,y){
-        this.position = [x,y];
-    }
-    getPosition(){
-        return this.position;
-    }
-    getID(){
-        return this.identifier;
-    }
-    placeBomb(terrain){
-        terrain.explode(this.position[0], this.position[1], this.playerBomb.radius)
-    }
-    getBomb(){
-        return this.playerBomb;
-    }
 }
 export {Player};
