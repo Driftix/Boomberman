@@ -59,10 +59,19 @@ async def handle_connection(websocket, path):
                         #on envoie à tout le monde la nouvelle position
                         await client.send(movePlayerData)
             elif eventController.getClient_event() == "placeBomb":
+                #le timer sera mis côté client mais la gestion des dégats sera géré côté serveur
+                #en gros on pourra tricher avec la console en changeant le timer mais pas d'autre idée
                 x = eventController.getClient_Data()["x"]
                 y = eventController.getClient_Data()["y"]
-                #on fait passer le player pour récupérer les stats de ses bombes
-                terrain.placeBomb(connected_clients[websocket])
+                #Pour le moment on place juste la bomb côté serveur
+                terrain.placeBomb(x,y)
+                #puis on envoie un event pour avoir la bombe partout (avec ses caractéristiques)
+                bombTerrainData = terrain.getDataBombTerrain(x,y,connected_clients[websocket])
+                #On oublie pas de retirer une bombe à notre joueur
+                connected_clients[websocket].decreaseBombQuantity()
+                for client in connected_clients:
+                    await client.send(bombTerrainData)
+                
 
     except websockets.exceptions.ConnectionClosed:
         # Enlever la connexion de la liste des clients connectés

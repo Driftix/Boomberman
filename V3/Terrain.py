@@ -50,7 +50,7 @@ class Terrain :
         dans un tableau 2D pour pouvoir, via nos coordonnées, regarder si il y a une brique / mur / air etc'''
         cells = self.terrain.findAll("td")
         cellClass = self.terrain2D[x][y]
-        if(cellClass == "brick" or cellClass == "wall"):
+        if(cellClass == "brick" or cellClass == "wall" or cellClass == "bomb"):
             return False
         else:
             return True
@@ -74,9 +74,18 @@ class Terrain :
             terrain2D[terrainX][terrainY] = cell['class']
         return terrain2D
     
-    def placeBomb(player):
-        #mettre un timer
-        #Quand le timer sera arrivé au bout il faudra envoyer la nouvelle carte au client
-        print("bombPlaced")
+    def placeBomb(self,x,y):
+        #on modifie la classe en bombe
+        self.terrain2D[x][y] = "bomb"
+    
+    def getDataBombTerrain(self,x,y,player):
+        return json.dumps({
+            "event" : "bombPlaced",
+            "x" : x,
+            "y": y,
+            "radius" : player.getBomb().getRadius(),
+        })
+
+
 
   

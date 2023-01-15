@@ -1,4 +1,5 @@
 import { Player } from "./Player.js";
+import {Bomb} from "./Bomb.js";
 
 class Terrain{
     constructor(){
@@ -25,6 +26,10 @@ class Terrain{
                 this.table.rows[player.position[0]].cells[player.position[1]].appendChild(player.playerElement);
             }
         })
+    }
+    placeBomb(x,y){
+        let bomb = new Bomb(x,y)
+        this.table.rows[x].cells[y].appendChild(bomb.bombElement);
     }
     /*
     getTable(){

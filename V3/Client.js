@@ -23,8 +23,11 @@ socket.onmessage = function({data}) {
   data = JSON.parse(data)
   console.log("Reçu : " +data.event);
   switch(data.event){
+    case "bombPlaced":
+      terrain.placeBomb(data.x, data.y)
+      //Une fois la bombe placée il faut lancer le timer
+      break;
     case "initPlayer":
-      console.log(data)
       terrain.addPlayer(data.identifier, data.x, data.y, data.playable);
       break;
     case "confirmMove" :

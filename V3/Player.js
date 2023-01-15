@@ -16,7 +16,7 @@ class Player{
     addElementStyle(element){
         element.style.width = "10px";
         element.style.height = "10px";
-        element.style.background = "red";
+        element.style.background = "blue";
         element.style.position = "inherit";
         element.style.padding = "0px";
         return element;

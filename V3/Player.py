@@ -1,10 +1,14 @@
 import json
+from Bomb import Bomb
+
 class Player:
     def __init__(self,identifier):
         print("Initialisation du Joueur: {}...".format(identifier))
         self.identifier = identifier
         self.positionX = 0
         self.positionY = 0
+        self.bomb = Bomb(2)
+        self.bombQuantity = 2
         
     def getDataPlayer(self, playable):
         initPlayer = {
@@ -51,3 +55,9 @@ class Player:
 
     def getIdentifier(self):
         return self.identifier
+    def getBomb(self):
+        return self.bomb
+    def getBombQuantity(self):
+        return self.bombQuantity
+    def decreaseBombQuantity(self):
+        self.bombQuantity -=1
