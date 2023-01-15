@@ -7,7 +7,7 @@ class Player:
         self.identifier = identifier
         self.positionX = 0
         self.positionY = 0
-        self.bomb = Bomb(2)
+        self.bomb = Bomb(3)
         self.bombQuantity = 2
         
     def getDataPlayer(self, playable):

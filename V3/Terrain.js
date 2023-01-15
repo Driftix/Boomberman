@@ -31,39 +31,29 @@ class Terrain{
         let bomb = new Bomb(x,y)
         this.table.rows[x].cells[y].appendChild(bomb.bombElement);
     }
-    /*
-    getTable(){
-        return this.table;
+
+    async animate(destroyed_blocs){
+        destroyed_blocs.forEach((bloc) =>{
+           
+                //On verifie que la case soit accessible, sinon l'erreur coupe le script
+                if(this.table.rows[bloc[0]].cells[bloc[1]] != undefined && this.table.rows[bloc[0]].cells != undefined){
+                    this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "red";
+                }
+                console.log("animation timeout")
+    
+        })
     }
-    explode(x,y,r){
-        console.log(x + ":"+y);
-        console.log(this.table.rows[x].cells[y].className);
-        //à modifier totalement
-        for(let xmax = x; xmax < x + r; xmax++){
-            if(this.table.rows[xmax].cells[y].className == "brick" && this.table.rows[xmax].cells[y].className == "air"){
-                this.table.rows[xmax].cells[y].className = "air";
-                break;
+    update(destroyed_blocs){
+        setInterval(() => {
+        destroyed_blocs.forEach((bloc) =>{
+            //On verifie que la case soit accessible, sinon l'erreur coupe le script
+            if(this.table.rows[bloc[0]].cells[bloc[1]] != undefined && this.table.rows[bloc[0]].cells != undefined){
+                this.table.rows[bloc[0]].cells[bloc[1]].className = "air";
+                this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "";
+
             }
-        }
-        for(let xmin = x; xmin < x - r; xmin--){
-            if(this.table.rows[xmin].cells[y].className == "brick" && this.table.rows[xmin].cells[y].className == "air"){
-                this.table.rows[xmin].cells[y].className = "air";
-                break;
-            }
-        }
-        for(let ymax = y; ymax < y + r; ymax++ ){
-            if(this.table.rows[x].cells[ymax].className == "brick" && this.table.rows[x].cells[ymax].className == "air"){
-                this.table.rows[x].cells[ymax].className = "air";
-                break;
-            }
-        }
-        for(let ymin = y; ymin < y- r; ymin++ ){
-            if(this.table.rows[x].cells[ymin].className == "brick" && this.table.rows[x].cells[ymin].className == "air"){
-                this.table.rows[x].cells[ymin].className = "air";
-                break;
-            }
-        }
-    }*/
-   
+        })
+        }, 200);
+    }
 }
 export {Terrain};

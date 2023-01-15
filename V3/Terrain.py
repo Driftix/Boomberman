@@ -54,16 +54,6 @@ class Terrain :
             return False
         else:
             return True
-        '''for cell in cells:
-            terrainX = int(cell['id'].split(',')[0])
-            terrainY = int(cell['id'].split(',')[1])
-            if(terrainX == x and terrainY == y):
-                #print("x:{} / y:{} / cellule:{}".format(x,y,cell['class']))
-                if(cell['class'] == "brick" or cell['class'] == "wall"):
-                    return False
-                else :
-                    return True
-                #terrain2D[x][y] = cell['class']'''
 
     def convertTerrainTo2D(self):
         cells = self.terrain.findAll("td")
@@ -85,6 +75,49 @@ class Terrain :
             "y": y,
             "radius" : player.getBomb().getRadius(),
         })
+    def explodeData(self,bomb):
+        bomb = json.loads(bomb)
+        #il faudra détruire le terrain par la même occasion
+        destroyed = self.explodeTerrain(bomb)
+        #Après avoir détruit le terrain on récupère le tableau pour l'envoyer au client
+        #Pour qu'il mette à jour sa vue
+        return json.dumps({
+            "event" : "explode",
+            "x" : bomb["x"],
+            "y" : bomb["y"],
+            "radius" : bomb["radius"],
+            "destroyed" : destroyed
+        })
+    
+    def explodeTerrain(self,bomb):
+        x = bomb["x"]
+        y = bomb["y"]
+        radius = bomb["radius"]
+        destroyed_blocs = []
+        #on part de la bombe puis on augmente 
+        for destroyed in self.destroyOrdonnee(radius,x,y):
+            destroyed_blocs.append(destroyed)
+        for destroyed in self.destroyAbscisse(radius,x,y):
+            destroyed_blocs.append(destroyed)
+        return destroyed_blocs
+
+    #un peu fait le sauvage mais tant pis
+    def destroyOrdonnee(self,radius,x,y):
+        destroyed = []
+        for tx in range(x-radius, x+radius+1):
+            if self.terrain2D[tx][y] in ["brick","air","bomb"] : #Pour pouvoir rajouter plus de destructibles
+                self.terrain2D[tx][y] = "air"
+                destroyed.append((tx, y))
+        return destroyed
+
+    def destroyAbscisse(self,radius,x,y):
+        destroyed = []
+        for ty in range(y-radius, y+radius+1): 
+            if self.terrain2D[x][ty] in ["brick","air","bomb"] : #Pour pouvoir rajouter plus de destructibles
+                self.terrain2D[x][ty] = "air"
+                destroyed.append((x, ty))
+        return destroyed
+
 
 
 

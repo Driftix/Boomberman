@@ -1,8 +1,11 @@
 import asyncio
+import json
 from EventController import EventController
 import websockets
 from Terrain import Terrain
 from Player import Player
+import threading
+import time
 
 connected_clients = {}
 
@@ -38,10 +41,10 @@ async def handle_connection(websocket, path):
                         await client.send(playablePlayerData)
                     else: 
                          #sinon on envoie un non playable
-                        await client.send(unplayablePlayerData)                   
+                        await client.send(unplayablePlayerData)                 
                     #on envoie le même joueur non jouable aux autres déjà connectés
                     if(client.id != websocket.id):
-                        guest = Player(str(client.id))
+                        guest = connected_clients[client]
                         guestData = guest.getDataPlayer(False)
                         await websocket.send(guestData)
             elif eventController.getClient_event() == "move":
@@ -71,11 +74,25 @@ async def handle_connection(websocket, path):
                 connected_clients[websocket].decreaseBombQuantity()
                 for client in connected_clients:
                     await client.send(bombTerrainData)
-                
+                #Après avoir placé la bombe il faut lancer un timer en tâche de fond
+                asyncio.create_task(countdown(1,bombTerrainData))
+
 
     except websockets.exceptions.ConnectionClosed:
         # Enlever la connexion de la liste des clients connectés
         connected_clients.pop(websocket)
+
+async def countdown(n,bomb):
+    while n > 0:
+        #print(n)
+        n -= 1
+        await asyncio.sleep(1)
+    for client in connected_clients:
+        
+        #on récupère la bombe et on renvoie l'event avec "explode"
+        bombData = terrain.explodeData(bomb)
+        print(bombData)
+        await client.send(bombData)
 
 
 start_server = websockets.serve(handle_connection, "localhost", 8001)

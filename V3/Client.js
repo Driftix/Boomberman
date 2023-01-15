@@ -3,10 +3,7 @@ import { Terrain } from "./Terrain.js";
 // Créer une instance de WebSocket en spécifiant l'URL du serveur
 var socket = new WebSocket("ws://localhost:8001/");
 
-//Récupération du joueur
-let player;
 let terrain;
-//C'est les autres joueurs en gros
 
 // Lorsque la connexion est établie
 socket.onopen = function() {
@@ -23,9 +20,12 @@ socket.onmessage = function({data}) {
   data = JSON.parse(data)
   console.log("Reçu : " +data.event);
   switch(data.event){
+    case "explode":
+      terrain.animate(data.destroyed).then(()=>terrain.update(data.destroyed));
+      console.log(data.destroyed)
+      break;
     case "bombPlaced":
       terrain.placeBomb(data.x, data.y)
-      //Une fois la bombe placée il faut lancer le timer
       break;
     case "initPlayer":
       terrain.addPlayer(data.identifier, data.x, data.y, data.playable);
