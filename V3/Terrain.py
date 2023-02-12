@@ -56,11 +56,6 @@ class Terrain :
                 return False
             else:
                 #Si le joueur peux jouer on ajoute le joueur à la map en tant que joueur
-                """if not self.terrain2D[old_x][old_y] == "bomb":
-                    #on modifie par par "air"
-                    self.terrain2D[old_x][old_y] = "air"
-                self.terrain2D[x][y] = "joueur"
-                """
                 #Il faudrait clear son ancienne position
                 return True
          
@@ -108,13 +103,6 @@ class Terrain :
         radius = bomb["radius"]
         destroyed_blocs = []
         #on part de la bombe puis on augmente
-        """
-        for destroyed in self.destroyOrdonnee(radius,x,y):
-            destroyed_blocs.append(destroyed)
-        for destroyed in self.destroyAbscisse(radius,x,y):
-            destroyed_blocs.append(destroyed)
-        return destroyed_blocs
-        """
         for destroyed in self.destroyY(radius+1,x,y,1):
              destroyed_blocs.append(destroyed)
         for destroyed in self.destroyY(-radius-1,x,y,-1):

@@ -22,10 +22,6 @@ class Player:
     
     def updatePosition(self,connectedClients, terrain):
         #Modifier pour que en fonction du nb de client on soit mis dans les coins
-        '''for client in connectedClients:
-            if str(connectedClients[client].getIdentifier()) != self.identifier:
-                self.positionX += 5
-                self.positionY += 5'''
         player = len(connectedClients) # 1 / 2 / 3 / 4
         if player == 1:
             self.positionX = 0

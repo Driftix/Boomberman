@@ -11,7 +11,6 @@ class Terrain{
         this.players.push(player);
         this.table.rows[player.position[0]].cells[player.position[1]].appendChild(player.playerElement);
         this.table.rows[player.position[0]].cells[player.position[1]].style.background = "blue";
-        //console.log(this.table.rows[player.position[0]].cells[player.position[1]].style.backgr)
     }   
     getPlayers(){
         return this.players;
@@ -47,10 +46,6 @@ class Terrain{
                 console.log("outofbound");
             }
 
-           /* if(this.table.rows[bloc[0]].cells != undefined && this.table.rows[bloc[0]].cells[bloc[1]] != undefined ){
-                //this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "red";
-                this.table.rows[bloc[0]].cells[bloc[1]].className = "anim";
-            }*/
         })
     }
     update(terrain){
@@ -68,10 +63,6 @@ class Terrain{
                     if(cell.className != terrain[i][j]){
                         this.table.rows[i].cells[j].className = "air";
 
-                        /*
-                        if(!this.table.rows[i].cells[j].className == "bomb"){
-                            this.table.rows[i].cells[j].className = "air";
-                        }*/
                     }
                 }
             }
