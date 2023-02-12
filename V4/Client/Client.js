@@ -50,7 +50,7 @@ socket.onmessage = function({data}) {
 
 document.addEventListener("keydown", function(event) {
   terrain.getPlayers().forEach((player) => {
-    if(player.playable ){
+    if(player.playable){
       let positionX = player.position[0];
       let positionY = player.position[1];
    

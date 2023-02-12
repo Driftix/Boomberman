@@ -40,17 +40,10 @@ class Terrain{
 
     async animate(destroyed_bloc){
         destroyed_bloc.forEach((bloc) => {
-            //carrément sale mais pas grave j'ai plus le temps
-            try{
-                this.table.rows[bloc[0]].cells[bloc[1]].className = "anim";
-            }catch(undefined){
-                console.log("outofbound");
-            }
-
-           /* if(this.table.rows[bloc[0]].cells != undefined && this.table.rows[bloc[0]].cells[bloc[1]] != undefined ){
+            if(this.table.rows[bloc[0]].cells[bloc[1]] != undefined && this.table.rows[bloc[0]].cells != undefined){
                 //this.table.rows[bloc[0]].cells[bloc[1]].style.backgroundColor = "red";
                 this.table.rows[bloc[0]].cells[bloc[1]].className = "anim";
-            }*/
+            }
         })
     }
     update(terrain){

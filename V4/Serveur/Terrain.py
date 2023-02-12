@@ -1,18 +1,23 @@
 import random
 from bs4 import BeautifulSoup
 import json
+from Props.Air import Air
+from Props.Brick import Brick
+from Props.Wall import Wall
+from Props.Bomb import Bomb
 
 class Terrain :
     def __init__(self,width, height):
         self.width = width
         self.height = height
         print("Instantiation du terrain...")
-        self.terrain = self.createTerrain(width,height)
+        self.terrain = self.generateTerrain(width,height)
         print("Terrain Créé...")
+        print("Instantiation du terrain 2D...")
         self.terrain2D = self.convertTerrainTo2D()
-        print("Terrain 2D en memoire")
+        print("Terrain 2D Créé...")
 
-    def createTerrain(self,width, height):
+    def generateTerrain(self,width, height):
         soup = BeautifulSoup("", "html.parser")
         table = soup.new_tag("table")
         table["id"] = "table"
@@ -28,44 +33,12 @@ class Terrain :
                 td = soup.new_tag("td")
                 td["id"] = f"{i},{j}"
                 tr.append(td)
-                choices = ["wall", "brick", "air"]
+                choices = [Wall(), Brick(), Air()]
                 weights = [0.12, 0.28, 0.6]
                 td["class"] = random.choices(choices,weights=weights)[0]
             tbody.append(tr)
         return table
 
-    def getStrTerrain(self):
-        return str(self.terrain)
-
-    def getDataTerrain(self):
-        initTerrain = {
-            "event" : "initTerrain",
-            "terrain" : self.getStrTerrain()
-        }
-        return json.dumps(initTerrain)
-
-    #Attention il envoie deux instructions à chaque fois c'est bizarre
-    def canPlayerMove(self,x,y,old_x,old_y):
-        '''En fait ici on va récupérer les infos de la map (bs4 => 2D)
-        dans un tableau 2D pour pouvoir, via nos coordonnées, regarder si il y a une brique / mur / air etc'''
-        cells = self.terrain.findAll("td")
-        if  x < self.width and y < self.height:
-            cellClass = self.terrain2D[x][y]
-            #print("x: {} | y : {} | width : {} | height : {} ".format(x,y,len(self.terrain2D),len(self.terrain2D[x])))
-            if cellClass in ["brick","wall","bomb","joueur"] or  x < 0 or  y < 0:
-                return False
-            else:
-                #Si le joueur peux jouer on ajoute le joueur à la map en tant que joueur
-                """if not self.terrain2D[old_x][old_y] == "bomb":
-                    #on modifie par par "air"
-                    self.terrain2D[old_x][old_y] = "air"
-                self.terrain2D[x][y] = "joueur"
-                """
-                #Il faudrait clear son ancienne position
-                return True
-         
-        else:
-            return False
     def convertTerrainTo2D(self):
         cells = self.terrain.findAll("td")
         terrain2D = [[0 for x in range(self.width)] for y in range(self.height)] 
@@ -75,46 +48,77 @@ class Terrain :
             terrain2D[terrainX][terrainY] = cell['class']
         return terrain2D
     
-    def placeBomb(self,x,y):
+    def convert2DToTerrain(self):
+        soup = BeautifulSoup("", "html.parser")
+        table = soup.new_tag("table")
+        table["id"] = "table"
+        table["border"] = "1"
+        table["cellpadding"] = "5"
+        table["cellspacing"] = "0"
+        tbody = soup.new_tag("tbody")
+        table.append(tbody)
+        for i in range(len(self.terrain2D)):
+            tr = soup.new_tag("tr")
+            for j in range(len(self.terrain2D[i])):
+                td = soup.new_tag("td")
+                td["id"] = f"{i},{j}"
+                td["class"] = self.terrain2D[i][j].className
+                tr.append(td)
+            tbody.append(tr)
+        return table
+    #Pour envoyer la donnée au client on reconvertis la map en Html
+    def getDataClientTerrain(self):
+        initTerrain = {
+            "event" : "initTerrain",
+            "terrain" : str(self.convert2DToTerrain())
+        }
+        return json.dumps(initTerrain)
+
+    #Attention il envoie deux instructions à chaque fois c'est bizarre
+    def canPlayerMove(self,player,x,y,old_x,old_y):
+        '''En fait ici on va récupérer les infos de la map (bs4 => 2D)
+        dans un tableau 2D pour pouvoir, via nos coordonnées, regarder si il y a une brique / mur / air etc'''
+        #Si jamais essaye de sortir du tableau
+        try : 
+            if isinstance(self.terrain2D[x][y],(Wall,Brick,Bomb,player.__class__)):
+                return False
+            else:
+                return True
+        except IndexError:
+            return False
+
+   
+    def placeBomb(self,pos,bomb):
         #on modifie la classe en bombe
-        self.terrain2D[x][y] = "bomb"
+        self.terrain2D[pos["x"]][pos["y"]] = bomb
     
-    def getDataBombTerrain(self,x,y,player):
+    def getDataBombTerrain(self,pos,bomb):
         return json.dumps({
             "event" : "bombPlaced",
-            "x" : x,
-            "y": y,
-            "radius" : player.getBomb().getRadius(),
+            "x" : pos["x"],
+            "y": pos["y"],
+            "radius" : bomb.getRadius(),
         })
     
-    def explodeData(self,bomb):
-        bomb = json.loads(bomb)
-        #il faudra détruire le terrain par la même occasion
-        destroyed = self.explodeTerrain(bomb)
+    def explodeData(self,pos,bomb):
+
+        destroyed = self.explodeTerrain(pos,bomb)
         #Après avoir détruit le terrain on récupère le tableau pour l'envoyer au client
         #Pour qu'il mette à jour sa vue
         return json.dumps({
             "event" : "explode",
-            "x" : bomb["x"],
-            "y" : bomb["y"],
-            "radius" : bomb["radius"],
+            "radius" : bomb.getRadius(),
             "terrain" : self.terrain2D,
             "destroyed" : destroyed
         })
     
-    def explodeTerrain(self,bomb):
-        x = bomb["x"]
-        y = bomb["y"]
-        radius = bomb["radius"]
+    def explodeTerrain(self,pos,bomb):
+        x = pos["x"]
+        y = pos["y"]
+        radius = bomb.getRadius()
         destroyed_blocs = []
         #on part de la bombe puis on augmente
-        """
-        for destroyed in self.destroyOrdonnee(radius,x,y):
-            destroyed_blocs.append(destroyed)
-        for destroyed in self.destroyAbscisse(radius,x,y):
-            destroyed_blocs.append(destroyed)
-        return destroyed_blocs
-        """
+
         for destroyed in self.destroyY(radius+1,x,y,1):
              destroyed_blocs.append(destroyed)
         for destroyed in self.destroyY(-radius-1,x,y,-1):
@@ -124,11 +128,8 @@ class Terrain :
         for destroyed in self.destroyX(-radius-1,x,y,-1):
              destroyed_blocs.append(destroyed)
         return destroyed_blocs
-    #Destruction du terain au spawn du joueur
-    def destroyTerrainPlayer(self,x,y):
-        radius = 3
-        destroyed_blocs = []
-        
+    
+
     def getUpdateTerrainData(self):
         return json.dumps({
             "event" : "updateTerrain",

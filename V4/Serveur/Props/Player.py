@@ -1,14 +1,16 @@
 import json
-from Bomb import Bomb
+from Props.Bomb import Bomb
 
 class Player:
     def __init__(self,identifier):
         print("Initialisation du Joueur: {}...".format(identifier))
+        self.className = "player"
         self.identifier = identifier
         self.positionX = 0
         self.positionY = 0
         self.bomb = Bomb(3)
         self.bombQuantity = 2
+      
         
     def getDataPlayer(self, playable):
         initPlayer = {
@@ -20,7 +22,7 @@ class Player:
         }
         return json.dumps(initPlayer)
     
-    def updatePosition(self,connectedClients, terrain):
+    def updatePosition(self,connectedClients):
         #Modifier pour que en fonction du nb de client on soit mis dans les coins
         '''for client in connectedClients:
             if str(connectedClients[client].getIdentifier()) != self.identifier:
@@ -30,24 +32,15 @@ class Player:
         if player == 1:
             self.positionX = 0
             self.positionY = 0
-            terrain.destroyTerrainPlayer(self.positionX, self.positionY)
-
         elif player == 2:
             self.positionX = 0
-            self.positionY = terrain.width -1
-            terrain.destroyTerrainPlayer(self.positionX, self.positionY)
-
+            self.positionY = 29
         elif player == 3:
-            self.positionX = terrain.height -1
+            self.positionX = 29
             self.positionY = 0
-            terrain.destroyTerrainPlayer(self.positionX, self.positionY)
-
         elif player == 4:
-            self.positionX = terrain.width -1
-            self.positionY = terrain.height -1
-            terrain.destroyTerrainPlayer(self.positionX, self.positionY)
-        #Supprimer les contours
-
+            self.positionX = 29
+            self.positionY = 29
 
     def movePlayer(self,x,y):
         self.positionX = x
