@@ -33,6 +33,9 @@ pip install time
 ```shell
 pip install random
 ```
+```shell
+pip install websockets
+```
 
 ## Une fois les dépendance ajoutées, lancez le jeu !
 - D'abord le serveur web client
