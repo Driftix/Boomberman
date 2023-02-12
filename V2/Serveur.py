@@ -27,7 +27,7 @@ def create_html_table(width, height):
             td["id"] = f"{i},{j}"
             tr.append(td)
             choices = ["wall", "brick", "air"]
-            weights = [0.12, 0.58, 0.3]
+            weights = [0.12, 0.3, 0.58]
             td["class"] = random.choices(choices,weights=weights)[0]
 
             '''if random.choices(choices,weights=weights)[0]: 
