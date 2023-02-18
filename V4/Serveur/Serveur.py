@@ -23,13 +23,21 @@ async def placeBomb(n,x,y,bomb,terrain,clients):
         n -= 1
         await asyncio.sleep(1)
     destroyed_blocs = terrain.destroyTerrainBomb(x,y,bomb)
-    print(destroyed_blocs)
     #Optimiser
     for client in clients:
         await client.websocket.send(terrain.getDataClientTerrain())
     for client in clients :
         await client.websocket.send(json.dumps({"event":"animate","destroyed":destroyed_blocs}))
 
+async def decreaseBomb(player):
+    player.bomb.quantity -= 1
+    await player.websocket.send(json.dumps({"event":"updateBomb","qty":player.bomb.quantity}))
+    time = player.bomb.loadTime
+    while time > 0:
+        time -= 1
+        await asyncio.sleep(1)
+    player.bomb.quantity += 1
+    await player.websocket.send(json.dumps({"event":"updateBomb","qty":player.bomb.quantity}))
 
 async def handle_connection(websocket, path):
     # On ajoute la connexion à la liste des clients connectés
@@ -89,10 +97,10 @@ async def handle_connection(websocket, path):
                         break
             elif eventController.getClient_event() == "placeBomb":
                 #Récup du joueur qui à placé la bombe
-                for player in connexions[join_key]["clients"]:
-                    if player.websocket == websocket:
+                for player in connexions[join_key]["clients"] :
+                    if player.websocket == websocket and player.isAlive and player.bomb.quantity > 0:
                         asyncio.create_task(placeBomb(2,player.position[0],player.position[1],player.bomb,connexions[join_key]["shared_field"], connexions[join_key]["clients"]))
-  
+                        asyncio.create_task(decreaseBomb(player))
     except websockets.exceptions.ConnectionClosed:
         #Enlever la connexion de la liste des clients connectés
         #connected_clients.pop(websocket)

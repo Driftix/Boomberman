@@ -6,5 +6,5 @@ class Player:
         self.websocket = websocket
         self.className = "player"
         self.position = [0,0]
-        self.bomb = Bomb(3)
+        self.bomb = Bomb(3,3,5)
         self.isAlive = True

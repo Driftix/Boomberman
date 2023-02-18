@@ -2,6 +2,8 @@ import asyncio
 import random
 from bs4 import BeautifulSoup
 import json
+from Props.Bonus_add_bomb import Bonus_add_bomb
+from Props.Bonus_extension import Bonus_extension
 from Props.Air import Air
 from Props.Brick import Brick
 from Props.Wall import Wall
@@ -84,7 +86,7 @@ class Terrain :
         try : 
             if isinstance(self.terrain2D[x][y],(Wall,Brick,Bomb)):
                 return False
-            else:
+            else:                    
                 return True
         except IndexError:
             return False
@@ -114,7 +116,10 @@ class Terrain :
         #On remet de l'air sur l'ancienne position
         if(not isinstance(self.terrain2D[player.position[0]][player.position[1]],Bomb)):
             self.terrain2D[player.position[0]][player.position[1]] = Air()
-
+        if(isinstance(self.terrain2D[x][y], Bonus_extension)):
+            player.bomb.radius += 1
+        elif(isinstance(self.terrain2D[x][y], Bonus_add_bomb)):
+            player.bomb.quantity +=1
         #On déplace le joueur sur la carte
         self.terrain2D[x][y] = player
         #maj position joueur
@@ -154,7 +159,11 @@ class Terrain :
                     destroyed.append((x, ty))
                      #Pour l'explosion d'une seule brique
                 elif isinstance(self.terrain2D[x][ty],Brick):
-                    self.terrain2D[x][ty] =  Air()
+                    #Rajouter un random pour mettre un bonus
+                    choices = [Air(), Bonus_extension(),Bonus_add_bomb()]
+                    weights = [0.88,0.06,0.06]
+                    self.terrain2D[x][ty] = random.choices(choices,weights=weights)[0]
+                    #self.terrain2D[x][ty] =  Air()
                     destroyed.append((x,ty))
                     break
                 elif isinstance(self.terrain2D[x][ty], Player):
@@ -178,7 +187,11 @@ class Terrain :
                     self.terrain2D[tx][y] = Air()
                     destroyed.append((tx, y))
                 elif isinstance(self.terrain2D[tx][y], Brick):
-                    self.terrain2D[tx][y] = Air()
+                    #Rajouter un random pour mettre un bonus
+                    choices = [Air(), Bonus_extension(), Bonus_add_bomb()]
+                    weights = [0.88,0.06,0.06]
+                    self.terrain2D[tx][y] = random.choices(choices,weights=weights)[0]
+                    #self.terrain2D[tx][y] = Air()
                     destroyed.append((tx, y))
                     break
                 elif isinstance(self.terrain2D[tx][y],Player):
@@ -188,7 +201,6 @@ class Terrain :
                     break
                 elif isinstance(self.terrain2D[tx][y],Wall):
                     break
-                
             except IndexError:
                 break
         return destroyed
