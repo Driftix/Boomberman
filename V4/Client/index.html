@@ -2,6 +2,8 @@
 <html lang="fr">
 
 <head>
+    <link rel="stylesheet" href="style.css">
+
     <title>Boomberman (C'est pas une copie c'est le vrai)</title>
     <style>
         .wall{
@@ -22,13 +24,41 @@
         td {
             padding: 10px;
         }
+        .player{
+            background-color:blue;
+        }
+        .extension{
+            background-color:yellow;
+        }
+        .add_bomb{
+            background-color:green;
+        }
       
 
     </style>
 </head>
 
 <body>
+    <div id="game-stats" style="display:none">
+        <a>Bomb quantity:</a>
+        <p id="bombquantity">3</p>
+    </div>
+    <div class="form" id="pre-game">
+        <div class="title">Booomberman</div>
+        <div class="subtitle">That's the one but worth</div>
+    <div >
+        <div class="input-container ic2">
+            <input id="joinURL" class="input" type="text" placeholder=" " />
+            <div class="cut"></div>
+            <label for="joinURL" class="placeholder">Session Code</label>
+          </div>
+        <button type="text" class="submit" id="createGame">Create Game</button>
+        <button id="joinGame" type="text" class="submit" >Join Game</button>
+    </div>
+    </div>
+    
     <script src="Client.js" type="module"></script>
+
 </body>
 
 </html>
