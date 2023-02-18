@@ -176,6 +176,7 @@ class Terrain :
             try:
                 if isinstance(self.terrain2D[tx][y],(Air,Bomb)) : #Pour pouvoir rajouter plus de destructibles
                     self.terrain2D[tx][y] = Air()
+                    destroyed.append((tx, y))
                 elif isinstance(self.terrain2D[tx][y], Brick):
                     self.terrain2D[tx][y] = Air()
                     destroyed.append((tx, y))
