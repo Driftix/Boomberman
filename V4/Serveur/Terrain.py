@@ -1,3 +1,4 @@
+import asyncio
 import random
 from bs4 import BeautifulSoup
 import json
@@ -5,6 +6,7 @@ from Props.Air import Air
 from Props.Brick import Brick
 from Props.Wall import Wall
 from Props.Bomb import Bomb
+from Player import Player
 
 class Terrain :
     def __init__(self,width, height):
@@ -69,56 +71,69 @@ class Terrain :
     #Pour envoyer la donnée au client on reconvertis la map en Html
     def getDataClientTerrain(self):
         initTerrain = {
-            "event" : "initTerrain",
+            "event" : "updateTerrain",
             "terrain" : str(self.convert2DToTerrain())
         }
         return json.dumps(initTerrain)
 
     #Attention il envoie deux instructions à chaque fois c'est bizarre
-    def canPlayerMove(self,player,x,y,old_x,old_y):
+    def canPlayerMove(self,x,y):
         '''En fait ici on va récupérer les infos de la map (bs4 => 2D)
         dans un tableau 2D pour pouvoir, via nos coordonnées, regarder si il y a une brique / mur / air etc'''
         #Si jamais essaye de sortir du tableau
         try : 
-            if isinstance(self.terrain2D[x][y],(Wall,Brick,Bomb,player.__class__)):
+            if isinstance(self.terrain2D[x][y],(Wall,Brick,Bomb)):
                 return False
             else:
                 return True
         except IndexError:
             return False
+    def addPlayer(self,player):
+        playerCount = 0
+        if(isinstance(self.terrain2D[0][0], Player)):
+            print("instance joueur")
+        for row in self.terrain2D:
+            for cell in row :
+                if isinstance(cell,Player):
+                    playerCount += 1
+        if playerCount == 0:
+            player.position[0] = 0
+            player.position[1] = 0
+        elif playerCount == 1:
+            player.position[0] = 0
+            player.position[1] = len(self.terrain2D)-1
+        elif playerCount == 2:
+            player.position[0] = len(self.terrain2D)-1
+            player.position[1] = 0
+        elif playerCount == 3:
+            player.position[0] = len(self.terrain2D)-1
+            player.position[1] = len(self.terrain2D)-1
+        self.terrain2D[player.position[0]][player.position[1]] = player
+    
+    def updatePlayer(self,player,x,y):
+        #On remet de l'air sur l'ancienne position
+        if(not isinstance(self.terrain2D[player.position[0]][player.position[1]],Bomb)):
+            self.terrain2D[player.position[0]][player.position[1]] = Air()
 
-   
-    def placeBomb(self,pos,bomb):
-        #on modifie la classe en bombe
-        self.terrain2D[pos["x"]][pos["y"]] = bomb
-    
-    def getDataBombTerrain(self,pos,bomb):
-        return json.dumps({
-            "event" : "bombPlaced",
-            "x" : pos["x"],
-            "y": pos["y"],
-            "radius" : bomb.getRadius(),
-        })
-    
-    def explodeData(self,pos,bomb):
+        #On déplace le joueur sur la carte
+        self.terrain2D[x][y] = player
+        #maj position joueur
+        player.position[0] = x
+        player.position[1] = y
+        print("terrain: {}".format("update"))
 
-        destroyed = self.explodeTerrain(pos,bomb)
-        #Après avoir détruit le terrain on récupère le tableau pour l'envoyer au client
-        #Pour qu'il mette à jour sa vue
-        return json.dumps({
-            "event" : "explode",
-            "radius" : bomb.getRadius(),
-            "terrain" : self.terrain2D,
-            "destroyed" : destroyed
-        })
-    
-    def explodeTerrain(self,pos,bomb):
-        x = pos["x"]
-        y = pos["y"]
-        radius = bomb.getRadius()
+    def placeBomb(self,x,y,bomb):
+        self.terrain2D[x][y] = bomb
+
+    def destroyTerrainBomb(self,x,y,bomb):
+        self.terrain2D[x][y] = Air()
+        return self.explodeTerrain(x,y,bomb)
+  
+
+    def explodeTerrain(self,x,y, bomb):
+        radius = bomb.radius
         destroyed_blocs = []
         #on part de la bombe puis on augmente
-
         for destroyed in self.destroyY(radius+1,x,y,1):
              destroyed_blocs.append(destroyed)
         for destroyed in self.destroyY(-radius-1,x,y,-1):
@@ -128,32 +143,26 @@ class Terrain :
         for destroyed in self.destroyX(-radius-1,x,y,-1):
              destroyed_blocs.append(destroyed)
         return destroyed_blocs
-    
 
-    def getUpdateTerrainData(self):
-        return json.dumps({
-            "event" : "updateTerrain",
-            "terrain" : self.terrain2D
-        })
-
-
-    #Pour aller vers le haut radius positif => step 1
-    #Pour aller vers le bas radius négatif => step -1
     def destroyY(self,radius,x,y,step):
         destroyed = []
         for ty in range(y, y+radius,step): 
             try:
                 #Pour la dispertion total
-                if self.terrain2D[x][ty] in ["air","bomb"] : #Pour pouvoir rajouter plus de destructibles
-                    self.terrain2D[x][ty] = "air"
+                if isinstance(self.terrain2D[x][ty],(Air,Bomb)): #Pour pouvoir rajouter plus de destructibles
+                    self.terrain2D[x][ty] = Air()
                     destroyed.append((x, ty))
-                #Pour l'arret d'une explosion
-                elif self.terrain2D[x][ty] in ["wall"]:
-                    break
-                #Pour l'explosion d'une seule brique
-                elif self.terrain2D[x][ty] in ["brick"]:
-                    self.terrain2D[x][ty] = "air"
+                     #Pour l'explosion d'une seule brique
+                elif isinstance(self.terrain2D[x][ty],Brick):
+                    self.terrain2D[x][ty] =  Air()
                     destroyed.append((x,ty))
+                    break
+                elif isinstance(self.terrain2D[x][ty], Player):
+                    self.terrain2D[x][ty].isAlive = False
+                    self.terrain2D[x][ty] = Air()
+                    break
+                #Pour l'arret d'une explosion
+                elif isinstance(self.terrain2D[x][ty],Wall):
                     break
             except IndexError:
                 break
@@ -165,21 +174,22 @@ class Terrain :
         destroyed = []
         for tx in range(x, x+radius,step): 
             try:
-                if self.terrain2D[tx][y] in ["air","bomb"] : #Pour pouvoir rajouter plus de destructibles
-                    self.terrain2D[tx][y] = "air"
-                    destroyed.append((tx, y))
-                elif self.terrain2D[tx][y] in ["wall"]:
-                    break
-                elif self.terrain2D[tx][y] in ["brick"]:
-                    self.terrain2D[tx][y] = "air"
+                if isinstance(self.terrain2D[tx][y],(Air,Bomb)) : #Pour pouvoir rajouter plus de destructibles
+                    self.terrain2D[tx][y] = Air()
+                elif isinstance(self.terrain2D[tx][y], Brick):
+                    self.terrain2D[tx][y] = Air()
                     destroyed.append((tx, y))
                     break
+                elif isinstance(self.terrain2D[tx][y],Player):
+                    self.terrain2D[tx][y].isAlive = False
+                    self.terrain2D[tx][y] = Air()
+                    destroyed.append((tx, y))
+                    break
+                elif isinstance(self.terrain2D[tx][y],Wall):
+                    break
+                
             except IndexError:
                 break
         return destroyed
-
-
-
-
 
   

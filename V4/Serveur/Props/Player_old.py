@@ -1,7 +1,7 @@
 import json
 from Props.Bomb import Bomb
 
-class Player:
+class Player_old:
     def __init__(self,identifier):
         print("Initialisation du Joueur: {}...".format(identifier))
         self.className = "player"

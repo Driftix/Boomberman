@@ -13,5 +13,4 @@ class EventController:
         return self.client_data
     def getClient_event(self):
         return self.client_event
-
-    
+        
